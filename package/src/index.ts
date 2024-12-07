@@ -21,15 +21,12 @@ export function getAdapter(args: Options = {}): AstroAdapter {
     name: packageName,
     serverEntrypoint: `${packageName}/server.js`,
     supportedAstroFeatures: {
-      assets: {
-        supportKind: 'stable',
-        isSharpCompatible: true,
-        isSquooshCompatible: true,
-      },
       envGetSecret: 'experimental',
-      hybridOutput: 'stable',
+      hybridOutput: 'deprecated',
+      i18nDomains: 'unsupported',
       serverOutput: 'stable',
-      staticOutput: 'unsupported',
+      sharpImageService: 'stable',
+      staticOutput: 'stable',
     },
   };
 }
@@ -50,11 +47,6 @@ export default defineIntegration({
             server: params.config.build.server?.toString(),
           }),
         );
-
-        if (params.config.output === 'static')
-          throw new AstroError(
-            `Only \`output: "server"\` or \`output: "hybrid"\` is supported by this adapter.`,
-          );
       },
     },
   }),
