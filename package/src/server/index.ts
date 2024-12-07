@@ -61,7 +61,7 @@ function handler(
 
   const app = new App(manifest);
 
-  return (req: Request) => {
+  return (req: Request, server: Server) => {
     const routeData = app.match(req);
     if (!routeData) {
       const url = new URL(req.url);
@@ -87,6 +87,7 @@ function handler(
 
     return app.render(req, {
       addCookieHeader: true,
+      clientAddress: server.requestIP(req)?.address,
       routeData,
     });
   };
