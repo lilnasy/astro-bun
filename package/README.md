@@ -6,7 +6,6 @@ This adapter allows Astro to deploy your SSR site to Bun targets.
 
 All functionality offered in [`astro-bun-adapter`](https://github.com/ido-pluto/astro-bun-adapter) is also available in this project, along with some additional features:
 
- - **Hybrid Output Support**: You can now use `"output": "hybrid"` in your `astro.config.mjs` to output both static and server-rendered pages.
  - **Improved server URL logging**: The URL printed to the console when the server is started now shows the full URL rather than just the port.
  - **Process exit & shutdown handlers**: Added support for `process.on` handlers for when the server exists, or intercepts `SIGINT` and `SIGTERM` signals.
 
@@ -27,7 +26,7 @@ bun add @nurodev/astro-bun
 
 export default defineConfig({
 + 	adapter: bun(),
-+ 	output: "hybrid",
++ 	output: "server",
 });
 ```
 
