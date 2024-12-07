@@ -49,7 +49,7 @@ This package is structured as a monorepo:
 - `playground` contains code for testing the package
 - `package` contains the actual package
 
-Install dependencies using pnpm: 
+Install dependencies using Bun: 
 
 ```bash
 bun i --frozen-lockfile
