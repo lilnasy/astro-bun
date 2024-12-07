@@ -1,5 +1,4 @@
 import { defineIntegration } from 'astro-integration-kit';
-import { AstroError } from 'astro/errors';
 
 import { name as packageName } from '~/package.json';
 import { CreateExportsEnum } from '~/types.ts';
