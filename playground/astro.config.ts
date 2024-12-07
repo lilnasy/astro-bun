@@ -12,5 +12,5 @@ export default defineConfig({
       directory: createResolver(import.meta.url).resolve('../package/dist'),
     }),
   ],
-  output: 'hybrid',
+  output: 'server',
 });
