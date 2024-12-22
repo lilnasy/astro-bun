@@ -18,5 +18,11 @@ export const OptionsSchema = z
     port: z.coerce.number().default(4321),
     /** TODO(@nurodev): Undocumented */
     server: z.string(),
+    /**
+     * Enable clustering for the server. (Only linux!)
+     *
+     * @default false
+     */
+    cluster: z.boolean().default(false),
   })
   .partial();
