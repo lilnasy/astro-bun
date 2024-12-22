@@ -1,6 +1,8 @@
 /// <reference types="astro/client" />
 
 import { App } from 'astro/app';
+import cluster from 'node:cluster';
+import os from 'node:os';
 
 import { extractHostname, serveStaticFile } from '~/server/utils.ts';
 
@@ -24,33 +26,44 @@ export function createExports(manifest: SSRManifest, options: Options): CreateEx
 
 let _server: Server | null = null;
 export function start(manifest: SSRManifest, options: Options) {
-  const app = new App(manifest);
-  const logger = app.getAdapterLogger();
-
   const hostname = process.env.HOST ?? extractHostname(options.host);
   const port = process.env.PORT ? Number.parseInt(process.env.PORT) : options.port;
 
-  _server = Bun.serve({
-    development: import.meta.env.DEV,
-    error: (error) =>
-      new Response(`<pre>${error}\n${error.stack}</pre>`, {
-        headers: { 'Content-Type': 'text/html' },
-      }),
-    fetch: handler(manifest, options),
-    hostname,
-    port,
-  });
+  if (cluster.isPrimary && options.cluster) {
+    const numCPUs = os.cpus().length;
+    for (let i = 0; i < numCPUs; i++) {
+      cluster.fork();
+    }
+    cluster.on('exit', (worker, code, signal) => {
+      console.log(`Worker ${worker.process.pid} died`);
+      cluster.fork();
+    });
+  } else {
+    const app = new App(manifest);
+    const logger = app.getAdapterLogger();
 
-  function exit() {
-    if (_server) _server.stop();
-    process.exit();
+    _server = Bun.serve({
+      development: import.meta.env.DEV,
+      error: (error) =>
+        new Response(`<pre>${error}\n${error.stack}</pre>`, {
+          headers: { 'Content-Type': 'text/html' },
+        }),
+      fetch: handler(manifest, options),
+      hostname,
+      port,
+    });
+
+    function exit() {
+      if (_server) _server.stop();
+      process.exit();
+    }
+
+    process.on('SIGINT', exit);
+    process.on('SIGTERM', exit);
+    process.on('exit', exit);
+
+    logger.info(`Server listening on ${_server.url.href}`);
   }
-
-  process.on('SIGINT', exit);
-  process.on('SIGTERM', exit);
-  process.on('exit', exit);
-
-  logger.info(`Server listening on ${_server.url.href}`);
 }
 
 function handler(
