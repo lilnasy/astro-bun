@@ -7,6 +7,12 @@ export const OptionsSchema = z
     /** TODO(@nurodev): Undocumented */
     client: z.string(),
     /**
+     * Enable clustering for the server. (Only linux!)
+     *
+     * @default false
+     */
+    cluster: z.boolean().optional().default(false),
+    /**
      * The hostname to serve the application on.
      */
     host: z.union([z.string(), z.boolean()]),
@@ -18,11 +24,5 @@ export const OptionsSchema = z
     port: z.coerce.number().default(4321),
     /** TODO(@nurodev): Undocumented */
     server: z.string(),
-    /**
-     * Enable clustering for the server. (Only linux!)
-     *
-     * @default false
-     */
-    cluster: z.boolean().default(false),
   })
   .partial();

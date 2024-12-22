@@ -1,8 +1,9 @@
 /// <reference types="astro/client" />
 
-import { App } from 'astro/app';
 import cluster from 'node:cluster';
 import os from 'node:os';
+
+import { App } from 'astro/app';
 
 import { extractHostname, serveStaticFile } from '~/server/utils.ts';
 
@@ -25,7 +26,7 @@ export function createExports(manifest: SSRManifest, options: Options): CreateEx
 }
 
 let _server: Server | null = null;
-export function start(manifest: SSRManifest, options: Options) {
+export function start(manifest: SSRManifest, options: Options): void {
   const hostname = process.env.HOST ?? extractHostname(options.host);
   const port = process.env.PORT ? Number.parseInt(process.env.PORT) : options.port;
 
@@ -34,7 +35,7 @@ export function start(manifest: SSRManifest, options: Options) {
     for (let i = 0; i < numCPUs; i++) {
       cluster.fork();
     }
-    cluster.on('exit', (worker, code, signal) => {
+    cluster.on('exit', (worker, _code, _signal) => {
       console.log(`Worker ${worker.process.pid} died`);
       cluster.fork();
     });
@@ -53,7 +54,7 @@ export function start(manifest: SSRManifest, options: Options) {
       port,
     });
 
-    function exit() {
+    function exit(): void {
       if (_server) _server.stop();
       process.exit();
     }
