@@ -34,7 +34,7 @@
     "dev": "tsup --watch"
   },
   "dependencies": {
-    "astro-integration-kit": "^0.17.0"
+    "astro-integration-kit": "^0.18.0"
   },
   "devDependencies": {
     "@types/bun": "^1.1.14",
