@@ -20,11 +20,11 @@
   "type": "module",
   "exports": {
     ".": {
-      "default": "./dist/index.js",
+      "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
     },
     "./server.js": {
-      "default": "./dist/server.js",
+      "import": "./dist/server.js",
       "types": "./dist/server.d.ts"
     },
     "./package.json": "./package.json"
