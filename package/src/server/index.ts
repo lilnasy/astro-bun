@@ -138,6 +138,7 @@ async function getStaticAssets(clientDir: string) {
  *
  * Copyright of withastro/adapters contributors, Reproduced under MIT License
  */
+// @ts-expect-error client and server fields are always present
 function resolveClientDir(options: InternalOptions) {
   const clientURLRaw = new URL(options.client);
   const serverURLRaw = new URL(options.server);
