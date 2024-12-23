@@ -6,9 +6,9 @@ import { OptionsSchema } from '~/validators';
 
 import type { AstroAdapter, AstroIntegration } from 'astro';
 
-import type { Options } from '~/types.ts';
+import type { Options, InternalOptions } from '~/types.ts';
 
-export function getAdapter(args: Options = {}): AstroAdapter {
+export function getAdapter(args: InternalOptions): AstroAdapter {
   return {
     args,
     exports: [
@@ -49,10 +49,10 @@ export default function integration(options?: Options): AstroIntegration {
           getAdapter({
             ...parsedOptions.data,
             assets: params.config.build.assets,
-            client: params.config.build.client?.toString(),
+            client: params.config.build.client.toString(),
             host: params.config.server.host,
             port: params.config.server.port,
-            server: params.config.build.server?.toString(),
+            server: params.config.build.server.toString(),
           }),
         );
       },

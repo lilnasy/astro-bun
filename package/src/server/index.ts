@@ -10,9 +10,12 @@ import { extractHostname, serveStaticFile } from '~/server/utils';
 import type { SSRManifest } from 'astro';
 import type { Server } from 'bun';
 
-import type { CreateExports, Options } from '~/types';
+import type { CreateExports, InternalOptions } from '~/types';
 
-export function createExports(manifest: SSRManifest, options: Options): CreateExports {
+export function createExports(
+  manifest: SSRManifest,
+  options: InternalOptions,
+): CreateExports {
   return {
     handle: handler(manifest, options),
     running: (): boolean => _server !== null,
@@ -26,11 +29,12 @@ export function createExports(manifest: SSRManifest, options: Options): CreateEx
 }
 
 let _server: Server | null = null;
-export function start(manifest: SSRManifest, options: Options): void {
+export function start(manifest: SSRManifest, options: InternalOptions): void {
   const { env } = process;
 
   const hostname = env.HOST ?? extractHostname(options.host);
   const port = env.PORT ? Number.parseInt(env.PORT) : options.port;
+  const unix = env.UNIX ?? options.unix;
 
   if (cluster.isPrimary && options.cluster) {
     const numCPUs = os.cpus().length;
@@ -47,14 +51,12 @@ export function start(manifest: SSRManifest, options: Options): void {
     const logger = app.getAdapterLogger();
 
     _server = Bun.serve({
-      development: import.meta.env.DEV,
       error: (error): Response =>
         new Response(`<pre>${error}\n${error.stack}</pre>`, {
           headers: { 'Content-Type': 'text/html' },
         }),
       fetch: handler(manifest, options),
-      hostname,
-      port,
+      ...(unix ? { unix } : { hostname, port }),
     });
 
     function exit(): void {
@@ -72,7 +74,7 @@ export function start(manifest: SSRManifest, options: Options): void {
 
 function handler(
   manifest: SSRManifest,
-  options: Options,
+  options: InternalOptions,
 ): (req: Request, server: Server) => Promise<Response> {
   const clientRoot = options.client ?? new URL('../client/', import.meta.url).href;
 
