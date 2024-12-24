@@ -5,19 +5,19 @@ import os from 'node:os';
 
 import { App } from 'astro/app';
 
-import { extractHostname, serveStaticFile } from '~/server/utils.ts';
+import { extractHostname, serveStaticFile } from '~/server/utils';
 
 import type { SSRManifest } from 'astro';
 import type { Server } from 'bun';
 
-import type { CreateExports, Options } from '~/types.ts';
+import type { CreateExports, Options } from '~/types';
 
 export function createExports(manifest: SSRManifest, options: Options): CreateExports {
   return {
     handle: handler(manifest, options),
-    running: () => _server !== null,
-    start: () => start(manifest, options),
-    stop: () => {
+    running: (): boolean => _server !== null,
+    start: (): void => start(manifest, options),
+    stop: (): void => {
       if (!_server) return;
       _server.stop();
       _server = null;
@@ -27,8 +27,10 @@ export function createExports(manifest: SSRManifest, options: Options): CreateEx
 
 let _server: Server | null = null;
 export function start(manifest: SSRManifest, options: Options): void {
-  const hostname = process.env.HOST ?? extractHostname(options.host);
-  const port = process.env.PORT ? Number.parseInt(process.env.PORT) : options.port;
+  const { env } = process;
+
+  const hostname = env.HOST ?? extractHostname(options.host);
+  const port = env.PORT ? Number.parseInt(env.PORT) : options.port;
 
   if (cluster.isPrimary && options.cluster) {
     const numCPUs = os.cpus().length;
@@ -36,7 +38,8 @@ export function start(manifest: SSRManifest, options: Options): void {
       cluster.fork();
     }
     cluster.on('exit', (worker, _code, _signal) => {
-      console.log(`Worker ${worker.process.pid} died`);
+      // biome-ignore lint/suspicious/noConsole: Soft error logging
+      console.warn(`Worker ${worker.process.pid} died`);
       cluster.fork();
     });
   } else {
@@ -45,7 +48,7 @@ export function start(manifest: SSRManifest, options: Options): void {
 
     _server = Bun.serve({
       development: import.meta.env.DEV,
-      error: (error) =>
+      error: (error): Response =>
         new Response(`<pre>${error}\n${error.stack}</pre>`, {
           headers: { 'Content-Type': 'text/html' },
         }),
@@ -75,7 +78,7 @@ function handler(
 
   const app = new App(manifest);
 
-  return (req: Request, server: Server) => {
+  return (req: Request, server: Server): Promise<Response> => {
     const routeData = app.match(req);
     if (!routeData) {
       const url = new URL(req.url);
