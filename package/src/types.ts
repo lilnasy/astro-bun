@@ -1,6 +1,8 @@
 import type { Server } from 'bun';
-
+import type { z } from 'zod';
 import type { AstroConfig } from 'astro';
+
+import type { OptionsSchema } from '~/validators';
 
 // the options available to the user when they are adding
 // the adapter to their configuration
@@ -18,7 +20,7 @@ export interface Options {
    *
    * Defaults to `false`
    */
-  cluster?: boolean;
+  cluster?: z.infer<typeof OptionsSchema>["cluster"];
   /**
    * The path to the unix socket on which to host the server.
    *
@@ -36,7 +38,7 @@ export interface Options {
    * })
    * ```
    */
-  unix?: string;
+  unix?: z.infer<typeof OptionsSchema>["unix"];
 }
 
 export const CreateExports = {
