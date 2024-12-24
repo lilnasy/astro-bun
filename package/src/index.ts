@@ -1,7 +1,7 @@
 import { defineIntegration } from 'astro-integration-kit';
 
 import { name as packageName } from '~/package.json';
-import { CreateExportsEnum } from '~/types.ts';
+import { CreateExports } from '~/types.ts';
 import { OptionsSchema } from '~/validators';
 
 import type { AstroAdapter } from 'astro';
@@ -12,11 +12,11 @@ export function getAdapter(args: Options = {}): AstroAdapter {
   return {
     args,
     exports: [
-      CreateExportsEnum.HANDLE,
-      CreateExportsEnum.RUNNING,
-      CreateExportsEnum.START,
-      CreateExportsEnum.STOP,
-    ] satisfies Array<CreateExportsEnum>,
+      CreateExports.HANDLE,
+      CreateExports.RUNNING,
+      CreateExports.START,
+      CreateExports.STOP,
+    ] satisfies Array<(typeof CreateExports)[keyof typeof CreateExports]>,
     name: packageName,
     serverEntrypoint: `${packageName}/server.js`,
     supportedAstroFeatures: {
@@ -33,8 +33,10 @@ export function getAdapter(args: Options = {}): AstroAdapter {
 export default defineIntegration({
   name: packageName,
   optionsSchema: OptionsSchema.optional(),
+  // biome-ignore lint/nursery/useExplicitType: Parent inferred type.
   setup: (integration) => ({
     hooks: {
+      // biome-ignore lint/nursery/useExplicitType: Parent inferred type.
       'astro:config:done': (params) => {
         params.setAdapter(
           getAdapter({
