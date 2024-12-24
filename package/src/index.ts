@@ -1,10 +1,10 @@
-import { defineIntegration } from 'astro-integration-kit';
+import { AstroError } from 'astro/errors';
 
 import { name as packageName } from '~/package.json';
-import { CreateExports } from '~/types.ts';
+import { CreateExports } from '~/types';
 import { OptionsSchema } from '~/validators';
 
-import type { AstroAdapter } from 'astro';
+import type { AstroAdapter, AstroIntegration } from 'astro';
 
 import type { Options } from '~/types.ts';
 
@@ -30,17 +30,24 @@ export function getAdapter(args: Options = {}): AstroAdapter {
   };
 }
 
-export default defineIntegration({
-  name: packageName,
-  optionsSchema: OptionsSchema.optional(),
-  // biome-ignore lint/nursery/useExplicitType: Parent inferred type.
-  setup: (integration) => ({
+export default function integration(options?: Options): AstroIntegration {
+  // Note: Running the parser manually instead of using `defineIntegration` because
+  // of this issue comment: https://github.com/NuroDev/astro-bun/pull/11#discussion_r1896212455
+  const parsedOptions = OptionsSchema.optional().safeParse(options);
+  if (!parsedOptions.success)
+    throw new AstroError(
+      `Invalid options passed to "${packageName}" integration\n`,
+      parsedOptions.error.issues.map((i) => i.message).join('\n'),
+    );
+
+  return {
+    name: packageName,
     hooks: {
       // biome-ignore lint/nursery/useExplicitType: Parent inferred type.
       'astro:config:done': (params) => {
         params.setAdapter(
           getAdapter({
-            ...integration.options,
+            ...parsedOptions.data,
             assets: params.config.build.assets,
             client: params.config.build.client?.toString(),
             host: params.config.server.host,
@@ -50,5 +57,5 @@ export default defineIntegration({
         );
       },
     },
-  }),
-});
+  };
+}
